@@ -1,6 +1,10 @@
 #!/usr/bin/perl -w
 use strict;
 use Getopt::Std;
+use FindBin;
+
+my $rnaplex = $FindBin::RealBin."/RNAplex";
+
 
 my $version_number = "1.0";
 my $help = help_message($version_number);
@@ -190,7 +194,7 @@ sub check_RNAplex {
     unless($opt_q) {
 	print STDERR "\tRNAplex: ";
     }
-    (open(RD, "RNAplex --version 2>&1 |")) || return 0;
+    (open(RD, "$rnaplex --version 2>&1 |")) || return 0;
     my $one = <RD>;
     close RD;
     if($one =~ /^RNAplex \d/) {
@@ -226,7 +230,7 @@ sub RNAplex_analysis {
     my $option_e = sprintf("%.2f",($opt_r * $perfect_MFE));
     
     # Call it
-    (open(PLEX, "RNAplex -f 2 -e $option_e -z $int_length < $$qfile |")) || die "ABORT: Failed to open RNAplex main job in sub-routine RNAplex_analysis for query $$query_name\n";
+    (open(PLEX, "$rnaplex -f 2 -e $option_e -z $int_length < $$qfile |")) || die "ABORT: Failed to open RNAplex main job in sub-routine RNAplex_analysis for query $$query_name\n";
     
     my $plex_brax;
     my $plex_mfe;
