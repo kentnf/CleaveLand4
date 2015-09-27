@@ -305,7 +305,7 @@ exit;
 sub help_message {
     my($version) = @_;
     my $message = "
-CleaveLand4.pl : Finding sliced targets of small RNAs from degradome data
+$0 - CleaveLand4.pl : Finding sliced targets of small RNAs from degradome data
 
 Version: $version
 
@@ -628,10 +628,16 @@ sub make_deg_density {
     
     # call the bowtie --> samtools pipeline to make a sorted bam file
     # Keep it quiet if needed
+    # kentnf: using best strata 
     if($opt_q) {
-	system "bowtie -f -v 1 --best -k 1 --norc -S $opt_n $opt_e 2> /dev/null \| sed -e 's/SO:unsorted/SO:coordinate/' 2> /dev/null \| samtools view -S -b -u - 2> /dev/null \| samtools sort - $bam_name 2> /dev/null";
+	#system "bowtie -f -v 1 --best -k 1 --norc -p 24 -S $opt_n $opt_e 2> /dev/null \| sed -e 's/SO:unsorted/SO:coordinate/' 2> /dev/null \| samtools view -S -b -u - 2> /dev/null \| samtools sort - $bam_name 2> /dev/null";
+	system "bowtie -f -v 1 -a --best --strata --norc -p 24 -S $opt_n $opt_e 2> /dev/null \| sed -e 's/SO:unsorted/SO:coordinate/' 2> /dev/null \| samtools view -S -b -u - 2> /dev/null \| samtools sort - $bam_name 2> /dev/null";
+
+
     } else {
-	system "bowtie -f -v 1 --best -k 1 --norc -S $opt_n $opt_e \| sed -e 's/SO:unsorted/SO:coordinate/' \| samtools view -S -b -u - 2> /dev/null \| samtools sort - $bam_name 2> /dev/null";
+	#system "bowtie -f -v 1 --best -k 1 --norc -p 24 -S $opt_n $opt_e \| sed -e 's/SO:unsorted/SO:coordinate/' \| samtools view -S -b -u - 2> /dev/null \| samtools sort - $bam_name 2> /dev/null";
+	system "bowtie -f -v 1 -a --best --strata --norc -p 24 -S $opt_n $opt_e \| sed -e 's/SO:unsorted/SO:coordinate/' \| samtools view -S -b -u - 2> /dev/null \| samtools sort - $bam_name 2> /dev/null";
+
     }
     # Verify the bam file is there
     my $bam_file = "$bam_name" . ".bam";
@@ -1068,8 +1074,8 @@ sub pretty_report_hit {
     print "Unpaired Regions \(query5\'-query3\',transcript3\'-transcript5\'\)\n";
     my $coord;
     my $unp_type;
-    if($fields[10] eq "NA") {
-	print "\tNA\n";
+    if($fields[10] eq "NA" || $fields[10] eq "FNA" || $fields[10] eq "TNA" || $fields[10] eq "GNA") {
+	print "\t$fields[10]\n";
     } else {
 	my @unpaired = split ("\;", $fields[10]);
 	foreach my $unp (@unpaired) {
