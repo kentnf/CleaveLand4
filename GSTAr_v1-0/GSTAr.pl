@@ -38,6 +38,9 @@ unless(-r $queries_file) {
     die "FATAL: queries.fasta file was not readable\n\n$help";
 }
 
+my $query_prefix = $queries_file;
+$query_prefix =~ s/\.fasta//; 
+
 # Start speaking to user, unless quiet mode is on
 unless($opt_q) {
     print STDERR "\nGSTAr version $version_number\n";
@@ -154,7 +157,7 @@ while (<QUERIES>) {
 close QUERIES;
 
 # remove temp file
-system "rm -f GSTAr_temp.fasta";
+system "rm -f GSTAr_temp_$query_prefix.fasta";
 
 ###########################
 # Here be sub-routines
@@ -1377,7 +1380,7 @@ sub pretty_output {
 
 sub write_q {  ## passed by reference
     my($qseq,$txome) = @_;
-    my $q_file = "GSTAr_temp.fasta";
+    my $q_file = "GSTAr_temp_$query_prefix.fasta";
     (open(Q, ">$q_file")) || die "ABORT: Failed to open temp file for writing in sub-routine write_q\n";
     
     my $t_seq;
@@ -1395,12 +1398,12 @@ sub get_perfect_MFE {
     my($seq) = @_;
     my $perfect = reverse $seq;
     $perfect =~ tr/AUCG/UAGC/;
-    (open(TEMP, ">GSTAr_perfect_tmp.fasta")) || die "ABORT: Failed to create a temp file in sub-routine get_perfect_MFE\n";
+    (open(TEMP, ">GSTAr_perfect_tmp_$query_prefix.fasta")) || die "ABORT: Failed to create a temp file in sub-routine get_perfect_MFE\n";
     print TEMP ">perfect\n$perfect\n>Query\n$seq\n";
     close TEMP;
     
     # Call RNAplex under default parameters
-    (open(PLEX, "RNAplex < GSTAr_perfect_tmp.fasta |")) || die "ABORT: RNAplex call failed in sub-routine get_perfect_MFE\n";
+    (open(PLEX, "RNAplex < GSTAr_perfect_tmp_$query_prefix.fasta |")) || die "ABORT: RNAplex call failed in sub-routine get_perfect_MFE\n";
     
     my $perfect_MFE;
     
@@ -1414,7 +1417,7 @@ sub get_perfect_MFE {
     close PLEX;
     #print "PERFECT: $perfect_MFE\n";
     #exit;
-    system "rm -f GSTAr_perfect_tmp.fasta";
+    system "rm -f GSTAr_perfect_tmp_$query_prefix.fasta";
     return $perfect_MFE;
 }
 	    
